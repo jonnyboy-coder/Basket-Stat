@@ -11,17 +11,7 @@ import {
   FileDown,
 } from "lucide-react";
 
-const initialPlayers = [
-  { id: 4, number: 4, name: "Þorsteinn" },
-  { id: 7, number: 7, name: "Matti" },
-  { id: 10, number: 10, name: "Kári" },
-  { id: 11, number: 11, name: "Þórður" },
-  { id: 13, number: 13, name: "Breki" },
-  { id: 15, number: 15, name: "Óliver" },
-  { id: 21, number: 21, name: "Arnór" },
-  { id: 23, number: 23, name: "Ísar" },
-  { id: 31, number: 31, name: "Trausti" },
-];
+const initialPlayers = [];
 
 const emptyLine = {
   pts: 0,
@@ -300,7 +290,7 @@ if (typeof window !== "undefined") {
 export default function FylkirLiveStatsPrototype() {
   const [players, setPlayers] = useState(initialPlayers);
   const [teamName] = useState("Grindavík");
-  const [selectedPlayerId, setSelectedPlayerId] = useState(initialPlayers[0].id);
+  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [events, setEvents] = useState([]);
   const [quarter, setQuarter] = useState(1);
   const [opponentScore, setOpponentScore] = useState(0);
