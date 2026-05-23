@@ -1444,15 +1444,27 @@ return (
                       </div>
                       </div>
 
+                      <div className="flex flex-col gap-2 shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingEvent(event);
+                        }}
+                        className="bg-yellow-400 text-blue-950 font-black rounded-xl px-3 py-2 text-sm"
+                      >
+                        Edit
+                      </button>
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           deleteEvent(event.id);
                         }}
-                        className="shrink-0 bg-red-500 text-white font-black rounded-xl px-3 py-2 text-sm"
+                        className="bg-red-500 text-white font-black rounded-xl px-3 py-2 text-sm"
                       >
-                        ✕
+                        X
                       </button>
+                      </div>
                       </div>
                       ))}              
                       </div>
