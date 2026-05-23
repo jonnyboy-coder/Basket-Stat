@@ -1394,7 +1394,7 @@ return (
 
                       <button
                         onClick={() => deleteEvent(event.id)}
-                        className="text-red-300 hover:text-red-100 font-black text-sm px-2"
+                        className="shrink-0 bg-red-500 text-white font-black rounded-xl px-3 py-2 text-sm"
                       >
                         ✕
                       </button>
