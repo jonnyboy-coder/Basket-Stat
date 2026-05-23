@@ -296,6 +296,7 @@ export default function FylkirLiveStatsPrototype() {
   const [opponentScore, setOpponentScore] = useState(0);
   const [possession, setPossession] = useState("team");
   const [screen, setScreen] = useState("game");
+  const [pendingStat, setPendingStat] = useState(null);
   const [pendingShot, setPendingShot] = useState(null);
   const [pendingRebound, setPendingRebound] = useState(null);
   const [savedGames, setSavedGames] = useState(() => safeStorageGet("basketball_saved_games", []));
@@ -476,12 +477,14 @@ export default function FylkirLiveStatsPrototype() {
   };
 
   const saveEvent = (type, extra = {}) => {
-    if (!selectedPlayer) return;
-    const event = {
+  const player = extra.playerOverride || selectedPlayer;
+  if (!player) return;
+
+  const event = {
       id: makeId(),
-      playerId: selectedPlayer.id,
-      playerName: selectedPlayer.name,
-      playerNumber: selectedPlayer.number,
+      playerId: player.id,
+      playerName: player.name,
+      playerNumber: player.number,
       type,
       quarter,
       possession,
@@ -495,39 +498,50 @@ export default function FylkirLiveStatsPrototype() {
     setEvents((prev) => [event, ...prev]);
   };
 
-  const addEvent = (type) => {
-    if (!selectedPlayer) return;
-    if (type === "2PT_MADE" || type === "3PT_MADE") {
-      setPendingShot({ type, scorer: selectedPlayer });
-      return;
-    }
-    if (type === "REB") {
-      setPendingRebound({ rebounder: selectedPlayer });
-      return;
-    }
-    saveEvent(type);
-  };
+const addEvent = (type) => {
+  setPendingStat(type);
+};
 
+const choosePlayerForStat = (player) => {
+  if (!pendingStat || !player) return;
+
+  if (pendingStat === "2PT_MADE" || pendingStat === "3PT_MADE") {
+    setPendingShot({ type: pendingStat, scorer: player });
+    setPendingStat(null);
+    return;
+  }
+
+  if (pendingStat === "REB") {
+  setPendingRebound({ rebounder: player });
+  setPendingStat(null);
+  return;
+}
+
+saveEvent(pendingStat, { playerOverride: player });
+setPendingStat(null);
+};
   const chooseAssist = (assistPlayer) => {
     if (!pendingShot) return;
     saveEvent(
       pendingShot.type,
-      assistPlayer
-        ? {
-            assistPlayerId: assistPlayer.id,
-            assistName: assistPlayer.name,
-            assistNumber: assistPlayer.number,
-          }
-        : { noAssist: true }
-    );
-    setPendingShot(null);
+      {
+        playerOverride: pendingShot.scorer,
+        ...(assistPlayer
+          ? {
+              assistPlayerId: assistPlayer.id,
+              assistName: assistPlayer.name,
+              assistNumber: assistPlayer.number,
+            }
+          : { noAssist: true }),
+      }
+    );    setPendingShot(null);
   };
 
   const chooseReboundType = (type) => {
-    if (!pendingRebound) return;
-    saveEvent(type);
-    setPendingRebound(null);
-  };
+  if (!pendingRebound) return;
+  saveEvent(type, { playerOverride: pendingRebound.rebounder });
+  setPendingRebound(null);
+};
 
   const undo = () => setEvents((prev) => prev.slice(1));
 
@@ -1112,10 +1126,39 @@ export default function FylkirLiveStatsPrototype() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-blue-950 text-white p-4 md:p-6">
-      {pendingRebound && (
-        <div className="fixed inset-0 z-50 bg-blue-950/90 flex items-center justify-center p-4">
+return (
+  <div className="min-h-screen bg-blue-950 text-white p-4 md:p-6">
+    {pendingStat && (  <div className="fixed inset-0 z-50 bg-blue-950/90 flex items-center justify-center p-4">
+    <Card className="w-full max-w-4xl bg-blue-900 border-yellow-300 rounded-2xl shadow-2xl">
+      <CardContent className="p-5">
+        <h2 className="text-3xl font-black text-yellow-300 mb-2">Choose Player</h2>
+        <div className="text-lg text-white mb-4">Stat: {pendingStat}</div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {sortedPlayers.map((player) => (
+            <button
+              key={player.id}
+              onClick={() => choosePlayerForStat(player)}
+              className="h-24 rounded-2xl bg-blue-700 hover:bg-yellow-400 hover:text-blue-950 text-white border border-blue-500 text-left px-4 font-black"
+            >
+              <div className="text-sm opacity-90">#{player.number}</div>
+              <div className="text-2xl truncate">{player.name || "Unnamed"}</div>
+            </button>
+          ))}
+        </div>
+
+        <Button
+          onClick={() => setPendingStat(null)}
+          className="mt-4 h-12 rounded-xl border-blue-400 bg-white text-black hover:bg-yellow-300 font-bold px-5"
+        >
+          Cancel
+        </Button>
+      </CardContent>
+</Card>
+</div>
+)}
+  {pendingRebound && (        
+    <div className="fixed inset-0 z-50 bg-blue-950/90 flex items-center justify-center p-4">
           <Card className="w-full max-w-2xl bg-blue-900 border-yellow-300 rounded-2xl shadow-2xl">
             <CardContent className="p-5">
               <h2 className="text-3xl font-black text-yellow-300 mb-2">Rebound Type?</h2>
@@ -1253,40 +1296,12 @@ export default function FylkirLiveStatsPrototype() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="bg-blue-900 border-blue-700 shadow-xl rounded-2xl">
-            <CardContent className="p-4 md:p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="h-5 w-5 text-yellow-300" />
-                <h2 className="text-xl font-black text-white">1. Tap Player</h2>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {sortedPlayers.map((player) => {
-                  const active = player.id === selectedPlayerId;
-                  return (
-                    <button
-                      key={player.id}
-                      onClick={() => setSelectedPlayerId(player.id)}
-                      className={`h-20 rounded-2xl text-left px-4 border transition ${
-                        active
-                          ? "bg-yellow-400 text-blue-950 border-yellow-200 shadow-lg scale-[1.02]"
-                          : "bg-blue-800 border-blue-600 hover:bg-blue-700 text-white"
-                      }`}
-                    >
-                      <div className="text-sm opacity-90 font-bold">#{player.number}</div>
-                      <div className="text-xl font-black truncate">{player.name}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           <Card className="bg-blue-900 border-blue-700 shadow-xl rounded-2xl">
             <CardContent className="p-4 md:p-5">
               <h2 className="text-xl font-black mb-1 text-white">2. Tap Stat</h2>
               <div className="text-sm text-blue-100 mb-3">
-                Selected: <span className="text-yellow-300 font-black">#{selectedPlayer?.number} {selectedPlayer?.name}</span>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {statButtons.map((button) => (
