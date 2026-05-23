@@ -720,10 +720,10 @@ setPendingStat(null);
 
   const BoxScoreTable = () => (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm table-fixed">
         <thead className="text-white">
           <tr className="border-b border-blue-700">
-            <th className="text-left py-2 pr-3">Player</th>
+            <th className="text-left py-2 pr-3 w-40">Player</th>
             <th>PTS</th>
             <th>REB</th>
             <th>OREB</th>
