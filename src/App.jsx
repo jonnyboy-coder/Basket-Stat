@@ -581,6 +581,10 @@ setPendingStat(null);
 
   const undo = () => setEvents((prev) => prev.slice(1));
 
+  const deleteEvent = (eventId) => {
+    setEvents((prev) => prev.filter((event) => event.id !== eventId));
+  };
+
   const reset = () => {
     setEvents([]);
     setOpponentScore(0);
@@ -1342,7 +1346,7 @@ return (
 
           <Card className="bg-blue-900 border-blue-700 shadow-xl rounded-2xl">
             <CardContent className="p-4 md:p-5">
-              <h2 className="text-xl font-black mb-1 text-white">STAT</h2>
+              <h2 className="text-xl font-black mb-1 text-white">Tap Stat</h2>
               <div className="text-sm text-blue-100 mb-3">
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -1372,15 +1376,31 @@ return (
                   </div>
                 )}
                 {events.slice(0, 12).map((event) => (
-                  <div key={event.id} className="rounded-2xl bg-blue-800 p-3 border border-blue-600">
-                    <div className="text-xs text-blue-100">
-                      Q{event.quarter} · {event.createdAt} · Poss: {event.possession === "team" ? teamName : "Opponent"}
-                    </div>
-                    <div className="font-black text-yellow-300">#{event.playerNumber} {event.playerName}</div>
-                    <div className="text-white">{eventLabel(event)}</div>
-                  </div>
-                ))}
-              </div>
+                  <div key={event.id} 
+                  className="rounded-2xl bg-blue-800 p-3 border border-blue-600 flex justify-between items-start gap-2">
+                    <div>
+                      <div className="text-xs text-blue-100">
+                        Q{event.quarter} • {event.createdAt} • Poss: {event.possession === "team" ? teamName : "Opponent"}
+                      </div>
+
+                      <div className="font-black text-yellow-300">
+                        #{event.playerNumber} {event.playerName}
+                      </div>
+
+                      <div className="text-white">
+                        {eventLabel(event)}
+                      </div>
+                      </div>
+
+                      <button
+                        onClick={() => deleteEvent(event.id)}
+                        className="text-red-300 hover:text-red-100 font-black text-sm px-2"
+                      >
+                        ✕
+                      </button>
+                      </div>
+                      ))}              
+                      </div>
             </CardContent>
           </Card>
         </div>
