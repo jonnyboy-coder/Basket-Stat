@@ -1213,7 +1213,129 @@ return (
         <div className="text-lg text-white mb-4">
           Current: #{editingEvent.playerNumber} {editingEvent.playerName} — {eventLabel(editingEvent)}
         </div>
+        {(editingEvent.type === "OREB" || editingEvent.type === "DREB") && (
+          <div className="mb-5">
+            <div className="text-sm text-blue-100 mb-2">Change rebound type</div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  setEvents((prev) =>
+                    prev.map((event) =>
+                      event.id === editingEvent.id
+                        ? { ...event, type: "OREB" }
+                        : event
+                    )
+                  );
+                  setEditingEvent((prev) => ({ ...prev, type: "OREB" }));
+                }}
+                className={`h-16 rounded-2xl font-black ${
+                  editingEvent.type === "OREB"
+                    ? "bg-yellow-400 text-blue-950"
+                    : "bg-blue-700 text-white border border-blue-500"
+                }`}
+              >
+                OREB
+              </button>
+
+              <button
+                onClick={() => {
+                  setEvents((prev) =>
+                    prev.map((event) =>
+                      event.id === editingEvent.id
+                        ? { ...event, type: "DREB" }
+                        : event
+                    )
+                  );
+                  setEditingEvent((prev) => ({ ...prev, type: "DREB" }));
+                }}
+                className={`h-16 rounded-2xl font-black ${
+                  editingEvent.type === "DREB"
+                    ? "bg-yellow-400 text-blue-950"
+                    : "bg-blue-700 text-white border border-blue-500"
+                }`}
+              >
+                DREB
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {(editingEvent.type === "2PT_MADE" || editingEvent.type === "3PT_MADE") && (
+          <div className="mb-5">
+            <div className="text-sm text-blue-100 mb-2">Change assist</div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {sortedPlayers.map((player) => (
+                <button
+                  key={player.id}
+                  onClick={() => {
+                    setEvents((prev) =>
+                      prev.map((event) =>
+                        event.id === editingEvent.id
+                          ? {
+                              ...event,
+                              assistPlayerId: player.id,
+                              assistName: player.name,
+                              assistNumber: player.number,
+                              noAssist: false,
+                            }
+                          : event
+                      )
+                    );
+                    setEditingEvent((prev) => ({
+                      ...prev,
+                      assistPlayerId: player.id,
+                      assistName: player.name,
+                      assistNumber: player.number,
+                      noAssist: false,
+                    }));
+                  }}
+                  className={`h-20 rounded-2xl font-black text-left px-4 ${
+                    editingEvent.assistPlayerId === player.id
+                      ? "bg-yellow-400 text-blue-950"
+                      : "bg-blue-700 text-white border border-blue-500"
+                  }`}
+                >
+                  <div className="text-sm opacity-90">#{player.number}</div>
+                  <div className="text-xl truncate">{player.name || "Unnamed"}</div>
+                </button>
+              ))}
+
+              <button
+                onClick={() => {
+                  setEvents((prev) =>
+                    prev.map((event) =>
+                      event.id === editingEvent.id
+                        ? {
+                            ...event,
+                            assistPlayerId: null,
+                            assistName: null,
+                            assistNumber: null,
+                            noAssist: true,
+                          }
+                        : event
+                    )
+                  );
+                  setEditingEvent((prev) => ({
+                    ...prev,
+                    assistPlayerId: null,
+                    assistName: null,
+                    assistNumber: null,
+                    noAssist: true,
+                  }));
+                }}
+                className={`h-20 rounded-2xl font-black px-4 ${
+                  editingEvent.noAssist
+                    ? "bg-yellow-400 text-blue-950"
+                    : "bg-blue-700 text-white border border-blue-500"
+                }`}
+              >
+                No Assist
+              </button>
+            </div>
+          </div>
+        )}
         <div className="text-sm text-blue-100 mb-2">Choose new player</div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
