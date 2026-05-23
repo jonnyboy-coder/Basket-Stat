@@ -348,6 +348,8 @@ export default function FylkirLiveStatsPrototype() {
       totals: {
         pts: [...filteredSeasonRows].sort((a, b) => b.pts - a.pts).slice(0, 5),
         reb: [...filteredSeasonRows].sort((a, b) => b.reb - a.reb).slice(0, 5),
+        oreb: [...filteredSeasonRows].sort((a, b) => b.oreb - a.oreb).slice(0, 5),
+        dreb: [...filteredSeasonRows].sort((a, b) => b.dreb - a.dreb).slice(0, 5),
         ast: [...filteredSeasonRows].sort((a, b) => b.ast - a.ast).slice(0, 5),
         stl: [...filteredSeasonRows].sort((a, b) => b.stl - a.stl).slice(0, 5),
         blk: [...filteredSeasonRows].sort((a, b) => b.blk - a.blk).slice(0, 5),
@@ -355,6 +357,8 @@ export default function FylkirLiveStatsPrototype() {
       averages: {
         pts: [...qualifiedRows].sort((a, b) => average(b, "pts") - average(a, "pts")).slice(0, 5),
         reb: [...qualifiedRows].sort((a, b) => average(b, "reb") - average(a, "reb")).slice(0, 5),
+        oreb: [...qualifiedRows].sort((a, b) => average(b, "oreb") - average(a, "oreb")).slice(0, 5),
+        dreb: [...qualifiedRows].sort((a, b) => average(b, "dreb") - average(a, "dreb")).slice(0, 5),
         ast: [...qualifiedRows].sort((a, b) => average(b, "ast") - average(a, "ast")).slice(0, 5),
         stl: [...qualifiedRows].sort((a, b) => average(b, "stl") - average(a, "stl")).slice(0, 5),
         blk: [...qualifiedRows].sort((a, b) => average(b, "blk") - average(a, "blk")).slice(0, 5),
@@ -367,13 +371,15 @@ export default function FylkirLiveStatsPrototype() {
       (totals, player) => {
         totals.pts += player.pts || 0;
         totals.reb += player.reb || 0;
+        totals.oreb += player.oreb || 0;
+        totals.dreb += player.dreb || 0;
         totals.ast += player.ast || 0;
         totals.stl += player.stl || 0;
         totals.blk += player.blk || 0;
         totals.threeM += player.threeM || 0;
         return totals;
       },
-      { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, threeM: 0 }
+      { pts: 0, reb: 0, oreb: 0, dreb: 0, ast: 0, stl: 0, blk: 0, threeM: 0 }
     );
   }, [filteredSeasonRows]);
 
@@ -391,24 +397,40 @@ export default function FylkirLiveStatsPrototype() {
   const exportSeasonTotals = () => {
     const rows = [
       [
+        [
         "Player",
         "GP",
         "PTS",
         "PPG",
         "REB",
         "RPG",
+        "OREB",
+        "ORPG",
+        "DREB",
+        "DRPG",
         "AST",
         "APG",
         "STL",
+        "SPG",
         "BLK",
+        "BPG",
         "PF",
+        "PFG",
         "TO",
+        "TOG",
         "2PM",
+        "2MPG",
         "2PA",
+        "2APG",
         "3PM",
+        "3MPG",
         "3PA",
+        "3APG",
         "FTM",
+        "FTMPG",
         "FTA",
+        "FTAPG",
+      ],
       ],
       ...filteredSeasonRows.map((p) => [
         `#${p.number} ${p.name}`,
@@ -417,18 +439,32 @@ export default function FylkirLiveStatsPrototype() {
         p.gp ? (p.pts / p.gp).toFixed(1) : "0.0",
         p.reb,
         p.gp ? (p.reb / p.gp).toFixed(1) : "0.0",
+        p.oreb,
+        p.gp ? (p.oreb / p.gp).toFixed(1) : "0.0",
+        p.dreb,
+        p.gp ? (p.dreb / p.gp).toFixed(1) : "0.0",
         p.ast,
         p.gp ? (p.ast / p.gp).toFixed(1) : "0.0",
         p.stl,
+        p.gp ? (p.stl / p.gp).toFixed(1) : "0.0",
         p.blk,
+        p.gp ? (p.blk / p.gp).toFixed(1) : "0.0",
         p.pf,
+        p.gp ? (p.pf / p.gp).toFixed(1) : "0.0",
         p.tov,
+        p.gp ? (p.tov / p.gp).toFixed(1) : "0.0",
         p.twoM,
+        p.gp ? (p.twoM / p.gp).toFixed(1) : "0.0",
         p.twoA,
+        p.gp ? (p.twoA / p.gp).toFixed(1) : "0.0",
         p.threeM,
+        p.gp ? (p.threeM / p.gp).toFixed(1) : "0.0",
         p.threeA,
+        p.gp ? (p.threeA / p.gp).toFixed(1) : "0.0",
         p.ftM,
+        p.gp ? (p.ftM / p.gp).toFixed(1) : "0.0",
         p.ftA,
+        p.gp ? (p.ftA / p.gp).toFixed(1) : "0.0",
       ]),
     ];
     downloadCSV("season-totals.csv", rows);
@@ -690,6 +726,8 @@ setPendingStat(null);
             <th className="text-left py-2 pr-3">Player</th>
             <th>PTS</th>
             <th>REB</th>
+            <th>OREB</th>
+            <th>DREB</th>
             <th>AST</th>
             <th>STL</th>
             <th>BLK</th>
@@ -710,6 +748,8 @@ setPendingStat(null);
                 </td>
                 <td className="text-center font-black text-yellow-300">{l.pts}</td>
                 <td className="text-center font-black text-yellow-300">{l.reb}</td>
+                <td className="text-center font-black text-yellow-300">{l.oreb}</td>
+                <td className="text-center font-black text-yellow-300">{l.dreb}</td>
                 <td className="text-center font-black text-yellow-300">{l.ast}</td>
                 <td className="text-center font-black text-yellow-300">{l.stl}</td>
                 <td className="text-center font-black text-yellow-300">{l.blk}</td>
@@ -731,6 +771,8 @@ setPendingStat(null);
       {[
         ["PTS", totals.pts],
         ["REB", totals.reb],
+        ["OREB", totals.oreb],
+        ["DREB", totals.dreb],
         ["AST", totals.ast],
         ["STL", totals.stl],
         ["BLK", totals.blk],
@@ -1300,7 +1342,7 @@ return (
 
           <Card className="bg-blue-900 border-blue-700 shadow-xl rounded-2xl">
             <CardContent className="p-4 md:p-5">
-              <h2 className="text-xl font-black mb-1 text-white">2. Tap Stat</h2>
+              <h2 className="text-xl font-black mb-1 text-white">STAT</h2>
               <div className="text-sm text-blue-100 mb-3">
               </div>
               <div className="grid grid-cols-3 gap-3">
