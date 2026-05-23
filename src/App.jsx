@@ -299,6 +299,7 @@ export default function FylkirLiveStatsPrototype() {
   const [pendingStat, setPendingStat] = useState(null);
   const [pendingShot, setPendingShot] = useState(null);
   const [pendingRebound, setPendingRebound] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
   const [savedGames, setSavedGames] = useState(() => safeStorageGet("basketball_saved_games", []));
   const [gameTitle, setGameTitle] = useState("Grindavík vs Opponent");
   const [seasonSearch, setSeasonSearch] = useState("");
@@ -1203,6 +1204,55 @@ return (
 </Card>
 </div>
 )}
+{editingEvent && (
+  <div className="fixed inset-0 z-50 bg-blue-950/90 flex items-center justify-center p-4">
+    <Card className="w-full max-w-4xl bg-blue-900 border-yellow-300 rounded-2xl shadow-2xl">
+      <CardContent className="p-5">
+        <h2 className="text-3xl font-black text-yellow-300 mb-2">Edit Play</h2>
+
+        <div className="text-lg text-white mb-4">
+          Current: #{editingEvent.playerNumber} {editingEvent.playerName} — {eventLabel(editingEvent)}
+        </div>
+
+        <div className="text-sm text-blue-100 mb-2">Choose new player</div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {sortedPlayers.map((player) => (
+            <button
+              key={player.id}
+              onClick={() => {
+                setEvents((prev) =>
+                  prev.map((event) =>
+                    event.id === editingEvent.id
+                      ? {
+                          ...event,
+                          playerId: player.id,
+                          playerName: player.name,
+                          playerNumber: player.number,
+                        }
+                      : event
+                  )
+                );
+                setEditingEvent(null);
+              }}
+              className="h-24 rounded-2xl bg-blue-700 hover:bg-yellow-400 hover:text-blue-950 text-white border border-blue-500 text-left px-4"
+            >
+              <div className="text-sm opacity-90">#{player.number}</div>
+              <div className="text-2xl truncate">{player.name || "Unnamed"}</div>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setEditingEvent(null)}
+          className="mt-4 h-12 rounded-xl border border-blue-400 bg-white text-black hover:bg-yellow-300 font-bold px-5"
+        >
+          Cancel
+        </button>
+      </CardContent>
+    </Card>
+  </div>
+)}
   {pendingRebound && (        
     <div className="fixed inset-0 z-50 bg-blue-950/90 flex items-center justify-center p-4">
           <Card className="w-full max-w-2xl bg-blue-900 border-yellow-300 rounded-2xl shadow-2xl">
@@ -1376,7 +1426,9 @@ return (
                   </div>
                 )}
                 {events.slice(0, 12).map((event) => (
-                  <div key={event.id} 
+                  <div 
+                  key={event.id} 
+                  onClick={() => setEditingEvent(event)}
                   className="rounded-2xl bg-blue-800 p-3 border border-blue-600 flex justify-between items-start gap-2">
                     <div>
                       <div className="text-xs text-blue-100">
@@ -1393,7 +1445,10 @@ return (
                       </div>
 
                       <button
-                        onClick={() => deleteEvent(event.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteEvent(event.id);
+                        }}
                         className="shrink-0 bg-red-500 text-white font-black rounded-xl px-3 py-2 text-sm"
                       >
                         ✕
