@@ -1338,15 +1338,74 @@ return (
         )}
 
         {["2PT_MADE", "2PT_MISS", "3PT_MADE", "3PT_MISS"].includes(editingEvent.type) && (
+        <div className="mb-5">
+          <div className="text-sm text-blue-100 mb-2">Change shot result</div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              ["2PT_MADE", "Made 2PT"],
+              ["2PT_MISS", "Missed 2PT"],
+              ["3PT_MADE", "Made 3PT"],
+              ["3PT_MISS", "Missed 3PT"],
+            ].map(([type, label]) => (
+              <button
+                key={type}
+                onClick={() => {
+                  setEvents((prev) =>
+                    prev.map((event) =>
+                      event.id === editingEvent.id
+                        ? {
+                            ...event,
+                            type,
+                            ...(type === "2PT_MISS" || type === "3PT_MISS"
+                              ? {
+                                  assistPlayerId: null,
+                                  assistName: null,
+                                  assistNumber: null,
+                                  noAssist: false,
+                                }
+                              : {}),
+                          }
+                        : event
+                    )
+                  );
+
+                  setEditingEvent((prev) => ({
+                    ...prev,
+                    type,
+                    ...(type === "2PT_MISS" || type === "3PT_MISS"
+                      ? {
+                          assistPlayerId: null,
+                          assistName: null,
+                          assistNumber: null,
+                          noAssist: false,
+                        }
+                      : {}),
+                  }));
+                }}
+                className={`h-16 rounded-2xl font-black ${
+                  editingEvent.type === type
+                    ? "bg-yellow-400 text-blue-950"
+                    : "bg-blue-700 text-white border border-blue-500"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+        
+        {["STL", "BLK", "FOUL", "TO"].includes(editingEvent.type) && (
           <div className="mb-5">
-            <div className="text-sm text-blue-100 mb-2">Change shot result</div>
+            <div className="text-sm text-blue-100 mb-2">Change stat type</div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                ["2PT_MADE", "Made 2PT"],
-                ["2PT_MISS", "Missed 2PT"],
-                ["3PT_MADE", "Made 3PT"],
-                ["3PT_MISS", "Missed 3PT"],
+                ["STL", "Steal"],
+                ["BLK", "Block"],
+                ["FOUL", "Foul"],
+                ["TO", "Turnover"],
               ].map(([type, label]) => (
                 <button
                   key={type}
@@ -1354,18 +1413,7 @@ return (
                     setEvents((prev) =>
                       prev.map((event) =>
                         event.id === editingEvent.id
-                          ? {
-                              ...event,
-                              type,
-                              ...(type === "2PT_MISS" || type === "3PT_MISS"
-                                ? {
-                                    assistPlayerId: null,
-                                    assistName: null,
-                                    assistNumber: null,
-                                    noAssist: false,
-                                  }
-                                : {}),
-                            }
+                          ? { ...event, type }
                           : event
                       )
                     );
@@ -1373,14 +1421,6 @@ return (
                     setEditingEvent((prev) => ({
                       ...prev,
                       type,
-                      ...(type === "2PT_MISS" || type === "3PT_MISS"
-                        ? {
-                            assistPlayerId: null,
-                            assistName: null,
-                            assistNumber: null,
-                            noAssist: false,
-                          }
-                        : {}),
                     }));
                   }}
                   className={`h-16 rounded-2xl font-black ${
@@ -1395,6 +1435,7 @@ return (
             </div>
           </div>
         )}
+
         <div className="text-sm text-blue-100 mb-2">Choose new player</div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
