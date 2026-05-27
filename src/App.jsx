@@ -300,6 +300,7 @@ export default function FylkirLiveStatsPrototype() {
   const [pendingShot, setPendingShot] = useState(null);
   const [pendingRebound, setPendingRebound] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [lastDeletedEvent, setLastDeletedEvent] = useState(null);
   const [savedGames, setSavedGames] = useState(() => safeStorageGet("basketball_saved_games", []));
   const [gameTitle, setGameTitle] = useState("Grindavík vs Opponent");
   const [seasonSearch, setSeasonSearch] = useState("");
@@ -583,9 +584,25 @@ setPendingStat(null);
   const undo = () => setEvents((prev) => prev.slice(1));
 
   const deleteEvent = (eventId) => {
-    setEvents((prev) => prev.filter((event) => event.id !== eventId));
-  };
+    const deletedEvent = events.find((event) => event.id === eventId);
 
+    if (deletedEvent) {
+      setLastDeletedEvent(deletedEvent);
+    }
+
+    setEvents((prev) =>
+      prev.filter((event) => event.id !== eventId)
+    );
+  };
+  const restoreDeletedEvent = () => {
+    if (!lastDeletedEvent) return;
+
+    setEvents((prev) =>
+      [lastDeletedEvent, ...prev].sort((a, b) => b.id - a.id)
+    );
+
+    setLastDeletedEvent(null);
+  };
   const reset = () => {
     setEvents([]);
     setOpponentScore(0);
@@ -1594,6 +1611,11 @@ return (
                   <Button onClick={undo} disabled={events.length === 0} className={mainButton}>
                     <Undo2 className="mr-2 h-5 w-5" /> Undo
                   </Button>
+                  {lastDeletedEvent && (
+                    <Button onClick={restoreDeletedEvent} className={mainButton}>
+                      Undo Delete
+                    </Button>
+                  )}
                   <Button onClick={reset} className={mainButton}>
                     <RotateCcw className="mr-2 h-5 w-5" /> Reset
                   </Button>
