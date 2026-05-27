@@ -1455,22 +1455,39 @@ return (
                       : event
                   )
                 );
-                setEditingEvent(null);
+                setEditingEvent((prev) => ({
+                ...prev,
+                playerId: player.id,
+                playerName: player.name,
+                playerNumber: player.number,
+              }));
               }}
-              className="h-24 rounded-2xl bg-blue-700 hover:bg-yellow-400 hover:text-blue-950 text-white border border-blue-500 text-left px-4"
-            >
+              className={`h-24 rounded-2xl text-left px-4 font-black ${
+                editingEvent.playerId === player.id
+                  ? "bg-yellow-400 text-blue-950"
+                  : "bg-blue-700 hover:bg-yellow-400 hover:text-blue-950 text-white border border-blue-500"
+              }`}            >
               <div className="text-sm opacity-90">#{player.number}</div>
               <div className="text-2xl truncate">{player.name || "Unnamed"}</div>
             </button>
           ))}
         </div>
 
-        <button
-          onClick={() => setEditingEvent(null)}
-          className="mt-4 h-12 rounded-xl border border-blue-400 bg-white text-black hover:bg-yellow-300 font-bold px-5"
-        >
-          Cancel
-        </button>
+        <div className="mt-6 flex justify-between">
+          <button
+            onClick={() => setEditingEvent(null)}
+            className="h-12 rounded-xl border border-blue-400 bg-white text-black hover:bg-yellow-300 font-bold px-5"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={() => setEditingEvent(null)}
+            className="h-12 rounded-xl border border-blue-400 bg-white text-black hover:bg-yellow-300 font-bold px-5"
+          >
+            Done
+          </button>
+        </div>      
       </CardContent>
     </Card>
   </div>
