@@ -295,6 +295,13 @@ export default function FylkirLiveStatsPrototype() {
   const [events, setEvents] = useState(liveGame.events || []);
   const [quarter, setQuarter] = useState(liveGame.quarter || 1);
   const [opponentScore, setOpponentScore] = useState(liveGame.opponentScore || 0);
+  const [teamQuarterScores, setTeamQuarterScores] = useState(
+    liveGame.teamQuarterScores || { 1: 0, 2: 0, 3: 0, 4: 0 }
+  );
+
+  const [opponentQuarterScores, setOpponentQuarterScores] = useState(
+    liveGame.opponentQuarterScores || { 1: 0, 2: 0, 3: 0, 4: 0 }
+  );
   const [possession, setPossession] = useState(liveGame.possession || "team");
   const [screen, setScreen] = useState("game");
   const [pendingStat, setPendingStat] = useState(null);
@@ -319,6 +326,8 @@ export default function FylkirLiveStatsPrototype() {
         events,
         quarter,
         opponentScore,
+        teamQuarterScores,
+        opponentQuarterScores,
         possession,
         gameTitle,
         selectedPlayerId,
@@ -328,6 +337,8 @@ export default function FylkirLiveStatsPrototype() {
       events,
       quarter,
       opponentScore,
+      teamQuarterScores,
+      opponentQuarterScores,
       possession,
       gameTitle,
       selectedPlayerId,
@@ -559,6 +570,20 @@ export default function FylkirLiveStatsPrototype() {
       ...extra,
     };
     setEvents((prev) => [event, ...prev]);
+    const pointsByType = {
+      "FT_MADE": 1,
+      "2PT_MADE": 2,
+      "3PT_MADE": 3,
+    };
+
+    const points = pointsByType[type] || 0;
+
+    if (points > 0) {
+      setTeamQuarterScores((prev) => ({
+        ...prev,
+        [quarter]: (prev[quarter] || 0) + points,
+      }));
+    }
   };
 
 const addEvent = (type) => {
@@ -608,11 +633,36 @@ setPendingStat(null);
 
   const undo = () => setEvents((prev) => prev.slice(1));
 
+  const pointsForEvent = (event) => {
+    if (event.type === "FT_MADE") return 1;
+    if (event.type === "2PT_MADE") return 2;
+    if (event.type === "3PT_MADE") return 3;
+    return 0;
+  };
+  const pointsForType = (type) => {
+    if (type === "FT_MADE") return 1;
+    if (type === "2PT_MADE") return 2;
+    if (type === "3PT_MADE") return 3;
+    return 0;
+  };
+
   const deleteEvent = (eventId) => {
     const deletedEvent = events.find((event) => event.id === eventId);
 
     if (deletedEvent) {
       setLastDeletedEvent(deletedEvent);
+
+      const points = pointsForEvent(deletedEvent);
+
+      if (points > 0) {
+        setTeamQuarterScores((prev) => ({
+          ...prev,
+          [deletedEvent.quarter]: Math.max(
+            0,
+            (prev[deletedEvent.quarter] || 0) - points
+          ),
+        }));
+      }
     }
 
     setEvents((prev) =>
@@ -626,11 +676,22 @@ setPendingStat(null);
       [lastDeletedEvent, ...prev].sort((a, b) => b.id - a.id)
     );
 
+    const points = pointsForEvent(lastDeletedEvent);
+
+    if (points > 0) {
+      setTeamQuarterScores((prev) => ({
+        ...prev,
+        [lastDeletedEvent.quarter]: (prev[lastDeletedEvent.quarter] || 0) + points,
+      }));
+    }
+
     setLastDeletedEvent(null);
   };
   const reset = () => {
     setEvents([]);
     setOpponentScore(0);
+    setTeamQuarterScores({ 1: 0, 2: 0, 3: 0, 4: 0 });
+    setOpponentQuarterScores({ 1: 0, 2: 0, 3: 0, 4: 0 });
     setQuarter(1);
     setPossession("team");
     setPendingShot(null);
@@ -698,11 +759,76 @@ setPendingStat(null);
   };
 
   const Scoreboard = () => (
-    <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3 text-center">
+    <div className="mt-5 grid grid-cols-1 md:grid-cols-5 gap-3 text-center">
       <div className="rounded-2xl bg-yellow-400 text-blue-950 p-4">
         <div className="text-sm opacity-90 font-bold">{teamName}</div>
         <div className="text-8xl md:text-9xl font-black leading-none">
           {teamScore}
+        </div>
+      </div>
+      <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
+        <div className="text-sm text-blue-100">Opponent Points</div>
+        <div className="text-5xl font-black text-yellow-300">{opponentScore}</div>
+        <div className="mt-3 flex flex-col gap-2">
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3].map((n) => (
+              <button
+                key={`plus-${n}`}
+                onClick={() => {
+                  setOpponentScore((s) => s + n);
+                  setOpponentQuarterScores((prev) => ({
+                    ...prev,
+                    [quarter]: (prev[quarter] || 0) + n,
+                  }));
+                }}
+                className="px-4 py-2 rounded-xl bg-yellow-400 text-blue-950 font-black text-lg"
+              >
+                +{n}
+              </button>
+            ))}
+          </div>
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3].map((n) => (
+              <button
+                key={`minus-${n}`}
+                onClick={() => setOpponentScore((s) => Math.max(0, s - n))}
+                className="px-4 py-2 rounded-xl bg-blue-700 text-white font-black text-lg border border-blue-500"
+              >
+                -{n}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
+        <div className="text-sm text-blue-100 mb-2">Quarter Score</div>
+
+        <div className="grid grid-cols-[55px_repeat(4,26px)] gap-1 text-xs font-black text-center items-center justify-center">
+          <div></div>
+          <div>Q1</div>
+          <div>Q2</div>
+          <div>Q3</div>
+          <div>Q4</div>
+
+          <div className="text-yellow-300 text-left pl-1 whitespace-nowrap overflow-hidden">{displayTeamName}</div>
+          {[1, 2, 3, 4].map((q) => (
+            <div
+              key={`team-q-${q}`}
+              className="bg-blue-700 rounded-lg py-1"
+            >
+              {teamQuarterScores[q] || 0}
+            </div>
+          ))}
+
+          <div className="text-yellow-300 text-left pl-1 whitespace-nowrap overflow-hidden">{displayOpponentName}</div>
+          {[1, 2, 3, 4].map((q) => (
+            <div
+              key={`opp-q-${q}`}
+              className="bg-blue-700 rounded-lg py-1"
+            >
+              {opponentQuarterScores[q] || 0}
+            </div>
+          ))}
         </div>
       </div>
       <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
@@ -738,34 +864,6 @@ setPendingStat(null);
           >
             {displayOpponentName}
           </button>
-        </div>
-      </div>
-      <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
-        <div className="text-sm text-blue-100">Opponent Points</div>
-        <div className="text-5xl font-black text-yellow-300">{opponentScore}</div>
-        <div className="mt-3 flex flex-col gap-2">
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3].map((n) => (
-              <button
-                key={`plus-${n}`}
-                onClick={() => setOpponentScore((s) => s + n)}
-                className="px-4 py-2 rounded-xl bg-yellow-400 text-blue-950 font-black text-lg"
-              >
-                +{n}
-              </button>
-            ))}
-          </div>
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3].map((n) => (
-              <button
-                key={`minus-${n}`}
-                onClick={() => setOpponentScore((s) => Math.max(0, s - n))}
-                className="px-4 py-2 rounded-xl bg-blue-700 text-white font-black text-lg border border-blue-500"
-              >
-                -{n}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
     </div>
@@ -1399,6 +1497,17 @@ return (
               <button
                 key={type}
                 onClick={() => {
+                  const oldPoints = pointsForType(editingEvent.type);
+                  const newPoints = pointsForType(type);
+                  const diff = newPoints - oldPoints;
+
+                  if (diff !== 0) {
+                    setTeamQuarterScores((prev) => ({
+                      ...prev,
+                      [editingEvent.quarter]:
+                        (prev[editingEvent.quarter] || 0) + diff,
+                    }));
+                  }
                   setEvents((prev) =>
                     prev.map((event) =>
                       event.id === editingEvent.id
@@ -1611,8 +1720,8 @@ return (
       )}
 
       <div className="max-w-7xl mx-auto space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="lg:col-span-2 bg-blue-900 border-blue-700 shadow-xl rounded-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-[5.5fr_1fr] gap-4">
+          <Card className="bg-blue-900 border-blue-700 shadow-xl rounded-2xl">
             <CardContent className="p-4 md:p-5">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
@@ -1663,7 +1772,7 @@ return (
                 <Trophy className="h-5 w-5 text-yellow-300" />
                 <h2 className="text-xl font-black text-white">Quick Leaders</h2>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="grid grid-cols-1 gap-3 text-sm">
                 {[
                   ["PTS", leaders.pts],
                   ["REB", leaders.reb],
