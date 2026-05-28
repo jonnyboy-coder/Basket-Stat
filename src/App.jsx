@@ -704,16 +704,16 @@ setPendingStat(null);
       </div>
       <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
         <div className="text-sm text-blue-100">Possession</div>
-        <div className="grid grid-cols-2 gap-2 mt-3">
+        <div className="grid grid-rows-2 gap-2 mt-3 h-[120px]">
           <button
             onClick={() => setPossession("team")}
-            className={`h-14 rounded-xl font-black ${possession === "team" ? "bg-yellow-400 text-blue-950" : "bg-blue-700 text-white"}`}
+            className={`h-full rounded-2xl text-lg font-black px-2 break-words ${possession === "team" ? "bg-yellow-400 text-blue-950" : "bg-blue-700 text-white"}`}
           >
             {displayTeamName}
           </button>
           <button
             onClick={() => setPossession("opponent")}
-            className={`h-14 rounded-xl font-black ${possession === "opponent" ? "bg-yellow-400 text-blue-950" : "bg-blue-700 text-white"}`}
+            className={`h-full rounded-2xl text-lg font-black px-2 break-words ${possession === "opponent" ? "bg-yellow-400 text-blue-950" : "bg-blue-700 text-white"}`}
           >
             {displayOpponentName}
           </button>
