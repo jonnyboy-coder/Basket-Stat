@@ -303,6 +303,12 @@ export default function FylkirLiveStatsPrototype() {
   const [lastDeletedEvent, setLastDeletedEvent] = useState(null);
   const [savedGames, setSavedGames] = useState(() => safeStorageGet("basketball_saved_games", []));
   const [gameTitle, setGameTitle] = useState("Grindavík vs Opponent");
+  const [parsedTeamName, parsedOpponentName] = gameTitle
+    .split(/\s+vs\s+/i)
+    .map((name) => name.trim());
+
+  const displayTeamName = parsedTeamName || "Team";
+  const displayOpponentName = parsedOpponentName || "Opponent";  
   const [seasonSearch, setSeasonSearch] = useState("");
   const [seasonMinGames, setSeasonMinGames] = useState(0);
   const [seasonSort, setSeasonSort] = useState("number");
@@ -699,13 +705,13 @@ setPendingStat(null);
             onClick={() => setPossession("team")}
             className={`h-14 rounded-xl font-black ${possession === "team" ? "bg-yellow-400 text-blue-950" : "bg-blue-700 text-white"}`}
           >
-            {teamName}
+            {displayTeamName}
           </button>
           <button
             onClick={() => setPossession("opponent")}
             className={`h-14 rounded-xl font-black ${possession === "opponent" ? "bg-yellow-400 text-blue-950" : "bg-blue-700 text-white"}`}
           >
-            Opponent
+            {displayOpponentName}
           </button>
         </div>
       </div>
