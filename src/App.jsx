@@ -682,7 +682,9 @@ setPendingStat(null);
     <div className="mt-5 grid grid-cols-1 md:grid-cols-4 gap-3 text-center">
       <div className="rounded-2xl bg-yellow-400 text-blue-950 p-4">
         <div className="text-sm opacity-90 font-bold">{teamName}</div>
-        <div className="text-5xl font-black">{teamScore}</div>
+        <div className="text-8xl md:text-9xl font-black leading-none">
+          {teamScore}
+        </div>
       </div>
       <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
         <div className="text-sm text-blue-100">Quarter</div>
@@ -720,7 +722,7 @@ setPendingStat(null);
         </div>
       </div>
       <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
-        <div className="text-sm text-blue-100">Opponent Points Only</div>
+        <div className="text-sm text-blue-100">Opponent Points</div>
         <div className="text-5xl font-black text-yellow-300">{opponentScore}</div>
         <div className="mt-3 flex flex-col gap-2">
           <div className="flex justify-center gap-2">
