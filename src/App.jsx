@@ -686,17 +686,21 @@ setPendingStat(null);
       </div>
       <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
         <div className="text-sm text-blue-100">Quarter</div>
-        <div className="flex items-center justify-center gap-2 mt-2">
+        <div className="grid grid-cols-2 grid-rows-2 gap-2 mt-2 h-[160px]">
           {[1, 2, 3, 4].map((q) => (
             <button
               key={q}
               onClick={() => setQuarter(q)}
-              className={`h-12 w-12 rounded-xl text-xl font-black ${quarter === q ? "bg-yellow-400 text-blue-950" : "bg-blue-700 text-white"}`}
+              className={`w-full h-full rounded-2xl text-4xl font-black transition-all ${
+                quarter === q
+                  ? "bg-yellow-400 text-blue-950"
+                  : "bg-blue-700 text-white hover:bg-blue-600"
+              }`}
             >
               {q}
             </button>
           ))}
-        </div>
+        </div>      
       </div>
       <div className="rounded-2xl bg-blue-800 p-4 border border-blue-600">
         <div className="text-sm text-blue-100">Possession</div>
