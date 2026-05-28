@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   RotateCcw,
   Undo2,
@@ -288,13 +288,14 @@ if (typeof window !== "undefined") {
 }
 
 export default function FylkirLiveStatsPrototype() {
-  const [players, setPlayers] = useState(initialPlayers);
+  const liveGame = safeStorageGet("basketball_live_game", {});
+  const [players, setPlayers] = useState(liveGame.players || initialPlayers);
   const [teamName] = useState("Grindavík");
-  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [quarter, setQuarter] = useState(1);
-  const [opponentScore, setOpponentScore] = useState(0);
-  const [possession, setPossession] = useState("team");
+  const [selectedPlayerId, setSelectedPlayerId] = useState(liveGame.selectedPlayerId || null);
+  const [events, setEvents] = useState(liveGame.events || []);
+  const [quarter, setQuarter] = useState(liveGame.quarter || 1);
+  const [opponentScore, setOpponentScore] = useState(liveGame.opponentScore || 0);
+  const [possession, setPossession] = useState(liveGame.possession || "team");
   const [screen, setScreen] = useState("game");
   const [pendingStat, setPendingStat] = useState(null);
   const [pendingShot, setPendingShot] = useState(null);
@@ -302,7 +303,7 @@ export default function FylkirLiveStatsPrototype() {
   const [editingEvent, setEditingEvent] = useState(null);
   const [lastDeletedEvent, setLastDeletedEvent] = useState(null);
   const [savedGames, setSavedGames] = useState(() => safeStorageGet("basketball_saved_games", []));
-  const [gameTitle, setGameTitle] = useState("Grindavík vs Opponent");
+  const [gameTitle, setGameTitle] = useState(liveGame.gameTitle || "Grindavík vs Opponent");
   const [parsedTeamName, parsedOpponentName] = gameTitle
     .split(/\s+vs\s+/i)
     .map((name) => name.trim());
@@ -312,7 +313,25 @@ export default function FylkirLiveStatsPrototype() {
   const [seasonSearch, setSeasonSearch] = useState("");
   const [seasonMinGames, setSeasonMinGames] = useState(0);
   const [seasonSort, setSeasonSort] = useState("number");
-
+    useEffect(() => {
+      safeStorageSet("basketball_live_game", {
+        players,
+        events,
+        quarter,
+        opponentScore,
+        possession,
+        gameTitle,
+        selectedPlayerId,
+      });
+    }, [
+      players,
+      events,
+      quarter,
+      opponentScore,
+      possession,
+      gameTitle,
+      selectedPlayerId,
+    ]);
   const mainButton = "h-14 px-5 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-blue-950 text-lg font-black";
 
   const sortedPlayers = useMemo(() => [...players].sort(sortByNumberThenName), [players]);
